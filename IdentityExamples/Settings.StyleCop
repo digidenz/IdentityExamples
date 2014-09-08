@@ -62,6 +62,7 @@
 			<Value>reprovisioned</Value>
 			<Value>reprovisioning</Value>
 			<Value>resource-deprovisioning</Value>
+			<Value>ryde</Value>
 			<Value>user-deprovisioning</Value>
 			<Value>asset-deprovisioning</Value>
 			<Value>organisation-deprovisioning</Value>
