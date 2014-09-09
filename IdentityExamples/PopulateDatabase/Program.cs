@@ -256,7 +256,7 @@ namespace DD.Cloud.Aperture.Identity.Example.PopulateDatabase
 
 				// Australia Admins
 				Organization australia = organizationRepository.GetById(Data.Organizations.Australia.Id);
-				accessControlRepository.CreateResourceTypePermission(
+				Guid updateToken = accessControlRepository.CreateResourceTypePermission(
 					australia.Id, 
 					Data.Groups.AustraliaAdmins.Id, 
 					ServiceType.System, 
@@ -274,15 +274,25 @@ namespace DD.Cloud.Aperture.Identity.Example.PopulateDatabase
 					locationNorthRyde.UpdateToken
 				);
 
+				// Australia Standard
+				updateToken = accessControlRepository.CreateResourceTypePermission(
+					australia.Id,
+					Data.Groups.AustraliaStandard.Id,
+					ServiceType.System,
+					ApertureAccessControl.Activity.UpdateResource,
+					Data.ResourceTypeNames.SystemDepartment,
+					InheritanceFlags.Children,
+					updateToken
+				);
+
 				// Resource Owner Rights
-				australia = organizationRepository.GetById(Data.Organizations.Australia.Id);
 				accessControlRepository.CreateResourceOwnerRight(
 					australia.Id,
 					ServiceType.System, 
 					ApertureAccessControl.Activity.ReadResource, 
 					Data.ResourceTypeNames.SystemLocation, 
 					InheritanceFlags.Organization | InheritanceFlags.Children,
-					australia.UpdateToken
+					updateToken
 				);
 			}
 		}
