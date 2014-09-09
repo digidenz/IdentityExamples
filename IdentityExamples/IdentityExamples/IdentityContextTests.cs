@@ -1,12 +1,19 @@
 ﻿using Autofac;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
 using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading.Tasks;
 
 namespace DD.Cloud.Aperture.Identity.Example
 {
+	using CloudServicesPortal.SecurityTemplate;
 	using Common;
 	using Contracts;
+	using DistributedManagement;
 	using Platform.Contracts;
+	using Platform.Core.Linq;
 	using Constants = Common.Constants;
 
 	/// <summary>
@@ -39,10 +46,33 @@ namespace DD.Cloud.Aperture.Identity.Example
 				.ConfigureAuditing()
 				.DirectToDatabase(Constants.AuditingConnectionString);
 
+			// Identity
 			containerBuilder
 				.ConfigureIdentity()
 				.WithAuthUsingDatabase(Constants.IdentityConnectionString)
 				.WithManagementApiUsingDatabase(Constants.IdentityConnectionString);
+
+			// Security template importer
+			containerBuilder
+				.RegisterType<SecurityTemplateImporter>()
+				.As<ISecurityTemplateImporter>()
+				.InstancePerLifetimeScope();
+
+			// Mock the DMS IProvisionedServiceManager and IResourceManager required to resolve the SecurityTemplateImporter
+			containerBuilder
+				.Register(
+					componentContext =>
+						(new Mock<IProvisionedServiceManager>()).Object
+				)
+				.As<IProvisionedServiceManager>()
+				.InstancePerLifetimeScope();
+			containerBuilder
+				.Register(
+					componentContext =>
+						(new Mock<IResourceManager>()).Object
+				)
+				.As<IResourceManager>()
+				.InstancePerLifetimeScope();
 
 			return containerBuilder.Build();
 		}
@@ -114,7 +144,7 @@ namespace DD.Cloud.Aperture.Identity.Example
 		}
 
 		/// <summary>
-		///		Test Identity Resource Type Permissions.
+		///		Test Identity Resource Type Permissions for Department resource type.
 		/// </summary>
 		[TestMethod]
 		public void ResourceTypePermissionTests_Department()
@@ -164,10 +194,60 @@ namespace DD.Cloud.Aperture.Identity.Example
 		}
 
 		/// <summary>
+		///		Test Identity Resource Type Permissions for Location resource type.
+		/// </summary>
+		[TestMethod]
+		public void ResourceTypePermissionTests_Location()
+		{
+			using (IContainer container = BuildContainer())
+			{
+				Organization[] organizationsToCheck =
+				{
+					Data.Organizations.Cloud,
+					Data.Organizations.Australia,
+					Data.Organizations.Optus,
+					Data.Organizations.Vodafone,
+					Data.Organizations.Usa
+				};
+
+				User[] usersToCheck =
+				{
+					Data.Users.JohnDoe,
+					Data.Users.MattSmith,
+					Data.Users.AlexWoods,
+					Data.Users.JennySmith
+				};
+
+				const string activity = ApertureAccessControl.Activity.ReadResource;
+				const string resourceType = Data.ResourceTypeNames.SystemLocation;
+
+				foreach (User user in usersToCheck)
+				{
+					using (new IdentityContextScope(Helpers.GetUserPrincipal(user), container))
+					{
+						Assert.IsNotNull(IdentityContext.Current);
+						foreach (Organization organization in organizationsToCheck)
+						{
+							TestContext.WriteLine(
+								"User '{0}' has {1}permission to perform activity '{2}' for resource type '{3}' under organization '{4}'.",
+								user.DisplayName,
+								IdentityContext.Current.HasResourceTypePermission(ServiceType.System, activity, resourceType, organization.Id) ? String.Empty : "no ",
+								activity,
+								resourceType,
+								organization.Name
+							);
+							TestContext.WriteLine(String.Empty);
+						}
+					}
+				}
+			}
+		}
+
+		/// <summary>
 		///		Test Identity Resource Permissions.
 		/// </summary>
 		[TestMethod]
-		public void ResourcePermissionTests_NorthRyde()
+		public void ResourcePermissionTests_LocationNorthRyde()
 		{
 			using (IContainer container = BuildContainer())
 			{
@@ -204,7 +284,7 @@ namespace DD.Cloud.Aperture.Identity.Example
 		///		Test Identity Resource Permissions.
 		/// </summary>
 		[TestMethod]
-		public void ResourcePermissionTests_TheRocks()
+		public void ResourcePermissionTests_LocationTheRocks()
 		{
 			using (IContainer container = BuildContainer())
 			{
@@ -234,6 +314,119 @@ namespace DD.Cloud.Aperture.Identity.Example
 						TestContext.WriteLine(String.Empty);
 					}
 				}
+			}
+		}
+
+		/// <summary>
+		///		Test Identity Resource Permissions.
+		/// </summary>
+		[TestMethod]
+		public void ResourcePermissionTests_DepartmentHR()
+		{
+			using (IContainer container = BuildContainer())
+			{
+				User[] usersToCheck =
+				{
+					Data.Users.JohnDoe,
+					Data.Users.MattSmith,
+					Data.Users.AlexWoods,
+					Data.Users.JennySmith
+				};
+
+				const string activity = ApertureAccessControl.Activity.ReadResource;
+				Resource resource = Data.PlatformResources.DepartmentHR;
+
+				foreach (User user in usersToCheck)
+				{
+					using (new IdentityContextScope(Helpers.GetUserPrincipal(user), container))
+					{
+						Assert.IsNotNull(IdentityContext.Current);
+						TestContext.WriteLine(
+							"User '{0}' has {1}permission to perform activity '{2}' for resource '{3}'.",
+							user.DisplayName,
+							IdentityContext.Current.HasResourcePermission(ServiceType.System, activity, resource.Id) ? String.Empty : "no ",
+							activity,
+							resource.Name
+						);
+						TestContext.WriteLine(String.Empty);
+					}
+				}
+			}
+		}
+
+		/// <summary>
+		///		Test Identity Resource Permissions.
+		/// </summary>
+		[TestMethod]
+		public void ResourcePermissionTests_DepartmentRD()
+		{
+			using (IContainer container = BuildContainer())
+			{
+				User[] usersToCheck =
+				{
+					Data.Users.JohnDoe,
+					Data.Users.MattSmith,
+					Data.Users.AlexWoods,
+					Data.Users.JennySmith
+				};
+
+				const string activity = ApertureAccessControl.Activity.ReadResource;
+				Resource resource = Data.PlatformResources.DepartmentRD;
+
+				foreach (User user in usersToCheck)
+				{
+					using (new IdentityContextScope(Helpers.GetUserPrincipal(user), container))
+					{
+						Assert.IsNotNull(IdentityContext.Current);
+						TestContext.WriteLine(
+							"User '{0}' has {1}permission to perform activity '{2}' for resource '{3}'.",
+							user.DisplayName,
+							IdentityContext.Current.HasResourcePermission(ServiceType.System, activity, resource.Id) ? String.Empty : "no ",
+							activity,
+							resource.Name
+						);
+						TestContext.WriteLine(String.Empty);
+					}
+				}
+			}
+		}
+
+		/// <summary>
+		///		Test Identity Resource Permissions.
+		/// </summary>
+		/// <returns>
+		///		A <see cref="Task"/> representing the asynchronous test execution.
+		/// </returns>
+		[TestMethod]
+		[DeploymentItem(@"TestData", @"IdentityExamples")]
+		public async Task ImportSecurityTemplate()
+		{
+			using (IContainer container = BuildContainer())
+			{
+				String templateFile = Path.Combine(
+					TestContext.DeploymentDirectory,
+					"IdentityExamples",
+					"SecurityTemplate.xml"
+				);
+
+				ISecurityTemplateImporter stImporter = container.Resolve<ISecurityTemplateImporter>();
+
+				// Load the security template
+				await stImporter.LoadSecurityTemplateAsync(templateFile);
+				Assert.IsTrue(stImporter.IsSecurityTemplateLoaded);
+
+				// Validate the security template against the organization we want to import the template to.
+				Guid targetOrganizationId = Data.Organizations.Cloud.Id;
+				IReadOnlyList<string> validationErrors = await stImporter.ValidateSecurityTemplateAsync(targetOrganizationId, ServiceTypes.All);
+				validationErrors
+					.ForEach(
+						error =>
+							TestContext.WriteLine(error)
+					);
+				Assert.IsTrue(stImporter.IsSecurityTemplateValidated);
+
+				// Import the security template.
+				await stImporter.ImportSecurityTemplateAsync(targetOrganizationId, ServiceTypes.All);
 			}
 		}
 	}

@@ -1,0 +1,100 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<securityTemplate xmlns="http://schemas.dimensiondata.com/cloud/platform/security-template">
+  <services>
+	<service serviceType="System">
+	  <groups>
+		<group
+			name="Test Administrator"
+			description="Administrator for the organization."
+			displayName="Test Admin"
+			isRole="0"
+		>
+		  <members/>
+		  <rights/>
+		</group>
+		<group
+			name="Test Read-only"
+			description="Read-only for the organization."
+			displayName="Test Read-only"
+			isRole="0"
+		>
+		  <members/>
+		  <rights/>
+		</group>
+		<group
+			name="Test System Administrator"
+			description="System Administrator for the organization."
+			displayName="Test System Admin"
+			isRole="0"
+		>
+		  <members>
+			<member name="Test Administrator" source="Current" />
+		  </members>
+		  <rights>
+			<right serviceType="System" activity="CreateOrganization" inheritanceMode="OrganizationAndChildren" />
+			<right serviceType="System" activity="UpdateOrganization" inheritanceMode="OrganizationAndChildren" />
+			<right serviceType="System" activity="DeleteOrganization" inheritanceMode="OrganizationAndChildren" />
+			<right serviceType="System" activity="CreateUser" inheritanceMode="OrganizationAndChildren" />
+			<right serviceType="System" activity="UpdateUser" inheritanceMode="OrganizationAndChildren" />
+			<right serviceType="System" activity="DeleteUser" inheritanceMode="OrganizationAndChildren" />
+			<right serviceType="System" activity="CreateGroup" inheritanceMode="OrganizationAndChildren" />
+			<right serviceType="System" activity="UpdateGroup" inheritanceMode="OrganizationAndChildren" />
+			<right serviceType="System" activity="DeleteGroup" inheritanceMode="OrganizationAndChildren" />
+		  </rights>
+		</group>
+		<group
+			name="Test System Read-only"
+			description="System read-only for the organization."
+			displayName="Test System Read-only"
+			isRole="0"
+					>
+		  <members>
+			<member name="Test System Administrator" source="Current" />
+			<member name="Test Read-only" source="Current" />
+		  </members>
+		  <rights>
+			<right serviceType="System" activity="ReadOrganization" inheritanceMode="OrganizationAndChildren" />
+			<right serviceType="System" activity="ReadUser" inheritanceMode="OrganizationAndChildren" />
+			<right serviceType="System" activity="CreateGroup" inheritanceMode="OrganizationAndChildren" />
+		  </rights>
+		</group>
+	  </groups>
+	</service>
+	<service serviceType="EnterpriseMobility">
+	  <groups>
+		<group
+			name="Test EMaaS Administrator"
+			description="EMaaS Administrator for the organization."
+			displayName="Test EMaaS Admin"
+			isRole="0"
+					>
+		  <members>
+			<member name="Test Administrator" source="Current" />
+		  </members>
+		  <rights>
+			<right serviceType="EnterpriseMobility" activity="CreateDevice" inheritanceMode="OrganizationAndChildren" />
+			<right serviceType="EnterpriseMobility" activity="UpdateDevice" inheritanceMode="OrganizationAndChildren" />
+			<right serviceType="EnterpriseMobility" activity="DeleteDevice" inheritanceMode="OrganizationAndChildren" />
+			<right serviceType="EnterpriseMobility" activity="LockDevice" inheritanceMode="OrganizationAndChildren" />
+			<right serviceType="EnterpriseMobility" activity="ClearPasscode" inheritanceMode="OrganizationAndChildren" />
+			<right serviceType="EnterpriseMobility" activity="EnterpriseWipe" inheritanceMode="OrganizationAndChildren" />
+		  </rights>
+		</group>
+		<group
+			name="Test EMaaS Read-only"
+			description="EMaaS read-only for the organization."
+			displayName="Test EMaaS Read-only"
+			isRole="0"
+					>
+		  <members>
+			<member name="Test EMaaS Administrator" source="Current" />
+			<member name="Test Read-only" source="Current" />
+		  </members>
+		  <rights>
+			<right serviceType="EnterpriseMobility" activity="ReadDevice" inheritanceMode="OrganizationAndChildren" />
+		  </rights>
+		</group>
+	  </groups>
+	</service>
+  </services>
+</securityTemplate>
