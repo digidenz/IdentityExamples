@@ -262,7 +262,7 @@ namespace DD.Cloud.Aperture.Identity.Example.PopulateDatabase
 					ServiceType.System, 
 					ApertureAccessControl.Activity.ReadResource, 
 					Data.ResourceTypeNames.SystemDepartment, 
-					InheritanceFlags.Organization | InheritanceFlags.Children,
+					InheritanceFlags.Children,
 					australia.UpdateToken
 				);
 				Resource locationNorthRyde = resourceRepository.GetById(Data.PlatformResources.LocationNorthRyde.Id);

@@ -294,8 +294,8 @@ namespace DD.Cloud.Aperture.Identity.Example.Common
 				Name = "R&D Department",
 				ServiceType = ServiceType.System,
 				ResourceTypeName = ResourceTypeNames.SystemDepartment,
-				OwnerId = Users.AlexWoods.Id,
-				OrganizationId = Users.AlexWoods.OrganizationId,
+				OwnerId = Groups.AustraliaAdmins.Id,
+				OrganizationId = Groups.AustraliaAdmins.OrganizationId,
 				CreatedUtc = DateTime.UtcNow,
 				UpdatedUtc = null,
 				UpdateToken = Guid.NewGuid()
