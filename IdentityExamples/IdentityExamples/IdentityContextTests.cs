@@ -4,6 +4,7 @@ using Moq;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace DD.Cloud.Aperture.Identity.Example
@@ -78,7 +79,7 @@ namespace DD.Cloud.Aperture.Identity.Example
 		}
 
 		/// <summary>
-		///		Resolve the Identity Context.
+		///		Create an Identity Context scope using John Doe's data, then resolve the Identity Context.
 		/// </summary>
 		[TestMethod]
 		public void ResolveIdentityContext()
@@ -91,6 +92,8 @@ namespace DD.Cloud.Aperture.Identity.Example
 				{
 					Assert.IsNotNull(IdentityContext.Current);
 					Assert.AreEqual(currentUser.Id, IdentityContext.Current.PrincipalId);
+					Assert.AreEqual(currentUser.DisplayName, IdentityContext.Current.PrincipalName);
+					Assert.AreEqual(currentUser.OrganizationId, IdentityContext.Current.OrganizationId);
 				}
 			}
 		}
@@ -386,6 +389,212 @@ namespace DD.Cloud.Aperture.Identity.Example
 							resource.Name
 						);
 						TestContext.WriteLine(String.Empty);
+					}
+				}
+			}
+		}
+
+		/// <summary>
+		///		Test Identity effective Right.
+		/// </summary>
+		[TestMethod]
+		public void EffectiveRightTests()
+		{
+			using (IContainer container = BuildContainer())
+			{
+				Organization[] organizationsToCheck =
+				{
+					Data.Organizations.Cloud,
+					Data.Organizations.Australia,
+					Data.Organizations.Optus,
+					Data.Organizations.Vodafone,
+					Data.Organizations.Usa
+				};
+
+				User[] usersToCheck =
+				{
+					Data.Users.JohnDoe,
+					Data.Users.MattSmith,
+					Data.Users.AlexWoods,
+					Data.Users.JennySmith
+				};
+
+				const string intent = "SecurityTokens";
+
+				foreach (User user in usersToCheck)
+				{
+					using (new IdentityContextScope(Helpers.GetUserPrincipal(user), container))
+					{
+						Assert.IsNotNull(IdentityContext.Current);
+						foreach (Organization organization in organizationsToCheck)
+						{
+							ISet<string> allowedActivities = IdentityContext.Current.GetEffectiveRights(
+								organization.Id,
+								ServiceType.System,
+								intent
+							);
+
+							if (allowedActivities.Any())
+							{
+								TestContext.WriteLine(
+									"User '{0}' has right to perform activities '{1}' associated with intent '{2}' under organization '{3}'.",
+									user.DisplayName,
+									String.Join(", ", allowedActivities),
+									intent,
+									organization.Name
+								);
+							}
+							else
+							{
+								TestContext.WriteLine(
+									"User '{0}' has no right to perform any activities associated with intent '{1}' under organization '{2}'.",
+									user.DisplayName,
+									intent,
+									organization.Name
+								);
+							}
+							TestContext.WriteLine(String.Empty);
+						}
+					}
+				}
+			}
+		}
+
+		/// <summary>
+		///		Test Identity effective Resource Type Permission for Department resource type.
+		/// </summary>
+		[TestMethod]
+		public void EffectiveResourceTypePermissionTests_Department()
+		{
+			using (IContainer container = BuildContainer())
+			{
+				Organization[] organizationsToCheck =
+				{
+					Data.Organizations.Cloud,
+					Data.Organizations.Australia,
+					Data.Organizations.Optus,
+					Data.Organizations.Vodafone,
+					Data.Organizations.Usa
+				};
+
+				User[] usersToCheck =
+				{
+					Data.Users.JohnDoe,
+					Data.Users.MattSmith,
+					Data.Users.AlexWoods,
+					Data.Users.JennySmith
+				};
+
+				const string intent = ApertureAccessControl.Intent.ManageResources;
+				const string resourceType = Data.ResourceTypeNames.SystemDepartment;
+
+				foreach (User user in usersToCheck)
+				{
+					using (new IdentityContextScope(Helpers.GetUserPrincipal(user), container))
+					{
+						Assert.IsNotNull(IdentityContext.Current);
+						foreach (Organization organization in organizationsToCheck)
+						{
+							ISet<string> allowedActivities = IdentityContext.Current.GetEffectiveResourceTypePermissions(
+								organization.Id,
+								ServiceType.System,
+								intent,
+								resourceType
+							);
+
+							if (allowedActivities.Any())
+							{
+								TestContext.WriteLine(
+									"User '{0}' has permission to perform activities '{1}' associated with intent '{2}' for resource type '{3}' under organization '{4}'.",
+									user.DisplayName,
+									String.Join(", ", allowedActivities),
+									intent,
+									resourceType,
+									organization.Name
+								);
+							}
+							else
+							{
+								TestContext.WriteLine(
+									"User '{0}' has no right to perform any activities associated with intent '{1}' for resource type '{2}' under organization '{3}'.",
+									user.DisplayName,
+									intent,
+									resourceType,
+									organization.Name
+								);
+							}
+							TestContext.WriteLine(String.Empty);
+						}
+					}
+				}
+			}
+		}
+
+		/// <summary>
+		///		Test Identity effective Resource Type Permission for Location resource type.
+		/// </summary>
+		[TestMethod]
+		public void EffectiveResourceTypePermissionTests_Location()
+		{
+			using (IContainer container = BuildContainer())
+			{
+				Organization[] organizationsToCheck =
+				{
+					Data.Organizations.Cloud,
+					Data.Organizations.Australia,
+					Data.Organizations.Optus,
+					Data.Organizations.Vodafone,
+					Data.Organizations.Usa
+				};
+
+				User[] usersToCheck =
+				{
+					Data.Users.JohnDoe,
+					Data.Users.MattSmith,
+					Data.Users.AlexWoods,
+					Data.Users.JennySmith
+				};
+
+				const string intent = ApertureAccessControl.Intent.ManageResources;
+				const string resourceType = Data.ResourceTypeNames.SystemLocation;
+
+				foreach (User user in usersToCheck)
+				{
+					using (new IdentityContextScope(Helpers.GetUserPrincipal(user), container))
+					{
+						Assert.IsNotNull(IdentityContext.Current);
+						foreach (Organization organization in organizationsToCheck)
+						{
+							ISet<string> allowedActivities = IdentityContext.Current.GetEffectiveResourceTypePermissions(
+								organization.Id,
+								ServiceType.System,
+								intent,
+								resourceType
+							);
+
+							if (allowedActivities.Any())
+							{
+								TestContext.WriteLine(
+									"User '{0}' has permission to perform activities '{1}' associated with intent '{2}' for resource type '{3}' under organization '{4}'.",
+									user.DisplayName,
+									String.Join(", ", allowedActivities),
+									intent,
+									resourceType,
+									organization.Name
+								);
+							}
+							else
+							{
+								TestContext.WriteLine(
+									"User '{0}' has no right to perform any activities associated with intent '{1}' for resource type '{2}' under organization '{3}'.",
+									user.DisplayName,
+									intent,
+									resourceType,
+									organization.Name
+								);
+							}
+							TestContext.WriteLine(String.Empty);
+						}
 					}
 				}
 			}
