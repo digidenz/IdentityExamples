@@ -12,6 +12,7 @@ namespace DD.Cloud.Aperture.Identity.Example
 	using CloudServicesPortal.SecurityTemplate;
 	using Common;
 	using Contracts;
+	using Contracts.Exceptions;
 	using DistributedManagement;
 	using Platform.Contracts;
 	using Platform.Core.Linq;
@@ -82,7 +83,7 @@ namespace DD.Cloud.Aperture.Identity.Example
 		///		Create an Identity Context scope using John Doe's data, then resolve the Identity Context.
 		/// </summary>
 		[TestMethod]
-		public void ResolveIdentityContext()
+		public void ResolveIdentityContextTest()
 		{
 			using (IContainer container = BuildContainer())
 			{
@@ -102,7 +103,7 @@ namespace DD.Cloud.Aperture.Identity.Example
 		///		Test Identity Rights.
 		/// </summary>
 		[TestMethod]
-		public void RightTests()
+		public void RightTest()
 		{
 			using (IContainer container = BuildContainer())
 			{
@@ -147,10 +148,39 @@ namespace DD.Cloud.Aperture.Identity.Example
 		}
 
 		/// <summary>
+		///		Test to demostrate demanding a Right using Identity Context.
+		/// </summary>
+		[TestMethod]
+		public void DemandRightTest()
+		{
+			using (IContainer container = BuildContainer())
+			{
+				using (new IdentityContextScope(Helpers.GetUserPrincipal(Data.Users.JohnDoe), container))
+				{
+					Assert.IsNotNull(IdentityContext.Current);
+
+					// Should not throw an exception as user John Doe should have the RequestSecurityToken Right under the Cloud organization.
+					IdentityContext.Current.DemandRight(ServiceType.System, ApertureAccessControl.Activity.RequestSecurityToken);
+
+					try
+					{
+						// Should throwAuthorizationException as user John Doe does not have the RequestSecurityToken Right under the Cloud organization.
+						IdentityContext.Current.DemandRight(ServiceType.System, ApertureAccessControl.Activity.RequestSecurityTokenForThirdParty);
+						Assert.Fail("Failed to throw AuthorizationException when the user does not have right.");
+					}
+					catch (AuthorizationException exception)
+					{
+						Assert.AreEqual(AuthorizationError.NotAuthorised, exception.Reason, "AuthorizationException Reason is not NotAuthorised");
+					}
+				}
+			}
+		}
+
+		/// <summary>
 		///		Test Identity Resource Type Permissions for Department resource type.
 		/// </summary>
 		[TestMethod]
-		public void ResourceTypePermissionTests_Department()
+		public void ResourceTypePermissionTest_Department()
 		{
 			using (IContainer container = BuildContainer())
 			{
@@ -200,7 +230,7 @@ namespace DD.Cloud.Aperture.Identity.Example
 		///		Test Identity Resource Type Permissions for Location resource type.
 		/// </summary>
 		[TestMethod]
-		public void ResourceTypePermissionTests_Location()
+		public void ResourceTypePermissionTest_Location()
 		{
 			using (IContainer container = BuildContainer())
 			{
@@ -250,7 +280,7 @@ namespace DD.Cloud.Aperture.Identity.Example
 		///		Test Identity Resource Permissions.
 		/// </summary>
 		[TestMethod]
-		public void ResourcePermissionTests_LocationNorthRyde()
+		public void ResourcePermissionTest_LocationNorthRyde()
 		{
 			using (IContainer container = BuildContainer())
 			{
@@ -287,7 +317,7 @@ namespace DD.Cloud.Aperture.Identity.Example
 		///		Test Identity Resource Permissions.
 		/// </summary>
 		[TestMethod]
-		public void ResourcePermissionTests_LocationTheRocks()
+		public void ResourcePermissionTest_LocationTheRocks()
 		{
 			using (IContainer container = BuildContainer())
 			{
@@ -324,7 +354,7 @@ namespace DD.Cloud.Aperture.Identity.Example
 		///		Test Identity Resource Permissions.
 		/// </summary>
 		[TestMethod]
-		public void ResourcePermissionTests_DepartmentHR()
+		public void ResourcePermissionTest_DepartmentHR()
 		{
 			using (IContainer container = BuildContainer())
 			{
@@ -361,7 +391,7 @@ namespace DD.Cloud.Aperture.Identity.Example
 		///		Test Identity Resource Permissions.
 		/// </summary>
 		[TestMethod]
-		public void ResourcePermissionTests_DepartmentRD()
+		public void ResourcePermissionTest_DepartmentRD()
 		{
 			using (IContainer container = BuildContainer())
 			{
@@ -398,7 +428,7 @@ namespace DD.Cloud.Aperture.Identity.Example
 		///		Test Identity effective Right.
 		/// </summary>
 		[TestMethod]
-		public void EffectiveRightTests()
+		public void EffectiveRightTest()
 		{
 			using (IContainer container = BuildContainer())
 			{
@@ -464,7 +494,7 @@ namespace DD.Cloud.Aperture.Identity.Example
 		///		Test Identity effective Resource Type Permission for Department resource type.
 		/// </summary>
 		[TestMethod]
-		public void EffectiveResourceTypePermissionTests_Department()
+		public void EffectiveResourceTypePermissionTest_Department()
 		{
 			using (IContainer container = BuildContainer())
 			{
@@ -534,7 +564,7 @@ namespace DD.Cloud.Aperture.Identity.Example
 		///		Test Identity effective Resource Type Permission for Location resource type.
 		/// </summary>
 		[TestMethod]
-		public void EffectiveResourceTypePermissionTests_Location()
+		public void EffectiveResourceTypePermissionTest_Location()
 		{
 			using (IContainer container = BuildContainer())
 			{
@@ -608,7 +638,7 @@ namespace DD.Cloud.Aperture.Identity.Example
 		/// </returns>
 		[TestMethod]
 		[DeploymentItem(@"TestData", @"IdentityExamples")]
-		public async Task ImportSecurityTemplate()
+		public async Task ImportSecurityTemplateTest()
 		{
 			using (IContainer container = BuildContainer())
 			{
